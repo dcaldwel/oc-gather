@@ -79,7 +79,12 @@ printf "\n\nVersion: \n" >> $FILE
 oc version | tee -a $FILE
 printf "\n\nStatus (verbose): \n" >> $FILE
 oc status -v | tee -a $FILE
-printf "\n\nclusternetwork: \n" >> $FILE
+
+# Network
+printf "\n\n==Network==\n" >> $FILE
+printf "\nhostsubnet: \n" >> $FILE
+oc get hostsubnet | tee -a $FILE
+printf "\nclusternetwork: \n" >> $FILE
 oc get clusternetwork | tee -a $FILE
 
 # If networkpolicy plugin detected, get policies info
@@ -91,7 +96,9 @@ if grepMatch="$(oc get clusternetwork | grep 'networkpolicy')" ; then
   oc get networkpolicy $NS | tee -a $FILE
   printf "\nDescribing network policies: \n" >> $FILE
   oc describe networkpolicy $NS | tee -a $FILE
-  printf "\n==End of networkpolicy plugin section==\n\n" >> $FILE
+  printf "\n==End of networkpolicy plugin section==\n" >> $FILE
 fi
 
+printf "\n==End of network section==\n\n" >> $FILE
 
+printf "\n\n==EOF==\n\n" >> $FILE
