@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Borrowed parseArgs() from https://stackoverflow.com/questions/255898/how-to-iterate-over-arguments-in-a-bash-script
+# Borrowed this short parseArgs() function from https://stackoverflow.com/questions/255898/how-to-iterate-over-arguments-in-a-bash-script
 parseArgs() {
 while [[ $# > 0 ]] ; do
   case "$1" in
