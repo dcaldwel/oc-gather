@@ -89,6 +89,7 @@ oc get clusternetwork | tee -a $FILE
 
 # If networkpolicy plugin detected, get policies info
 if grepMatch="$(oc get clusternetwork | grep 'networkpolicy')" ; then
+#  printf "\ngrepMatch: $grepMatch\n\n" >> $FILE
   printf "\n\n==Detected networkpolicy plugin==\n" >> $FILE
   printf "\nnetnamespace: \n" >> $FILE
   oc get netnamespace | tee -a $FILE
@@ -100,5 +101,20 @@ if grepMatch="$(oc get clusternetwork | grep 'networkpolicy')" ; then
 fi
 
 printf "\n==End of network section==\n\n" >> $FILE
+
+if grepMatch="$(oc get pods | grep deploy | grep Error | awk '{print $1}')" ; then
+  printf "\n==Deployment pods in error:==\n" >> $FILE
+  printf "\n\noc get pods:\n" >> $FILE
+  oc get pods | grep deploy | grep Error | awk '{print $1}' | while read data; do "oc get pods $data -o yaml"; done | tee -a $FILE
+  printf "\n\noc describe pods:\n" >> $FILE
+  oc get pods | grep deploy | grep Error | awk '{print $1}' | while read data; do oc describe pods $data ; done | tee -a $FILE
+  printf "\n\noc describe rc:\n" >> $FILE
+  oc get pods | grep deploy | grep Error | awk '{print $1}' | echo ${1:0:${#1}-7} | while read data; do oc describe rc $data ; done
+  printf "\n\noc logs:\n" >> $FILE
+  oc get pods | grep deploy | grep Error | awk '{print $1}' | while read data; do oc logs $data ; done | tee -a $FILE
+  printf "\n\noc describe dc:\n" >> $FILE
+  oc get pods | grep deploy | grep Error | awk '{print $1}' | cut -d'-' -f1 | while read data; do oc describe dc $data ; done | tee -a $FILE
+fi
+printf "\n==End of deployment pods in error==\n\n" >> $FILE
 
 printf "\n\n==EOF==\n\n" >> $FILE
