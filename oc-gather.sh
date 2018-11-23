@@ -46,7 +46,7 @@ fi
 if touch $FILE ; then
   printf "\n$FILE created\n\n"
 else
-  printf "\nError creating file. Please check that the directory exists.\n\n"
+  printf "\nError creating file. Please check that any relevant directories exist.\n\n"
   exit 1
 fi
 
@@ -55,6 +55,7 @@ fi
 if [[ ! $NS = *[!\ ]* ]] ; then
   NS="--all-namespaces"
   printf "\n\$NS set to $NS'\n\n"
+  # Prepend '-n ' to given namespace for ease later
 else
   NS="-n $NS"
 fi
@@ -64,106 +65,133 @@ fi
 # Gather info#
 ##############
 
+# Start of redirected commands
+{
+
 # Boilerplate
-printf "\n==Gathering data==\n\n" | tee -a $FILE
-printf "oc-gather started: " >> $FILE
-date >> $FILE
-printf "\n" >> $FILE
-printf "Options used: output file = $FILE, namespace string = \'$NS\'" >> $FILE
+printf "==Started==\n"
+date
+printf "\nOptions used: output file = $FILE, namespace string = \'$NS\'"
 
 # Miscellaneous oc commands
-printf "\n\n==Miscellaneous oc commands==\n" >> $FILE
-printf "\nLogged in to OpenShift as: \n" >> $FILE
-oc whoami | tee -a $FILE
-printf "\n\nStatus (verbose): \n" >> $FILE
-oc status -v | tee -a $FILE
-printf "\n\nProjects:\n" >> $FILE
-oc projects | tee -a $FILE
-printf "\n==End of miscellaneous section==\n\n" >> $FILE
+printf "\n\n==Miscellaneous oc commands==\n"
+printf "\nLogged in to OpenShift as: \n"
+oc whoami
+printf "\n\nStatus (verbose): \n"
+oc status -v
+printf "\n\nProjects:\n"
+oc projects
+printf "\n==End of miscellaneous section==\n\n"
 
 # Versions
-printf "\n\n==Version info==\n\n" >> $FILE
-printf "\noc version\n" >> $FILE
-oc version | tee -a $FILE
-printf "\ndocker --version\n" >> $FILE
-docker --version | tee -a $FILE
-printf "\netcd --version\n" >> $FILE
-etcdctl --version | tee -a $FILE
-printf "\nansible --version\n" >> $FILE
-ansible --version  | tee -a $FILE
+printf "\n\n==Version info==\n\n"
+oc version
+printf "\n"
+docker --version
+printf "\n"
+etcdctl --version
+printf "\n"
+ansible --version 
+
+# Nodes
+printf "\n\n==Nodes==\n"
+printf "\noc get nodes\n"
+oc get nodes
+printf "\n==End of nodes section==\n\n"
 
 # etcd
-printf "\n\n==etcd==\n" >> $FILE
-printf "\netcdctl cluster-health:\n" >> $FILE
-etcdctl cluster-health | tee -a $FILE
-printf "\n==End of etcd section==\n" >> $FILE
+printf "\n\n==etcd==\n"
+printf "\netcdctl cluster-health:\n"
+etcdctl cluster-health
+printf "\n==End of etcd section==\n"
 
 # Storage
-printf "\n\n==Storage==\n" >> $FILE
-printf "\noc get pv:" >> $FILE
-oc get pv -n default | tee -a $FILE
+printf "\n\n==Storage==\n"
+printf "\nLocal storage:\n"
+df
+printf "\noc get pv:\n"
+oc get pv -n default
 
 if grepMatch="$(oc get pvc $NS | grep 'No resources found.')" ; then
-  printf "\nNo PVCs for $NS\n" >> $FILE
+  printf "\nNo PVCs for $NS\n"
 else
-  printf "\noc get pvc $NS" >> $FILE
-  oc get pvc $NS | tee -a $FILE
-  printf "\noc describe pvc $NS\n" >> $FILE
-  oc get pvc | grep -v 'NAME' | awk '{print $1}' | while read data; do oc describe pvc $data ; done | tee -a $FILE
+  printf "\noc get pvc $NS:\n"
+  oc get pvc $NS
+  printf "\noc describe pvc $NS\n"
+  oc get pvc | grep -v 'NAME' | awk '{print $1}' | while read data; do oc describe pvc $data ; done
 fi
-printf "\n==End of storage section==" >> $FILE
+printf "\n==End of storage section=="
 
 # Network
-printf "\n\n==Network==\n" >> $FILE
-printf "\nhostsubnet: \n" >> $FILE
-oc get hostsubnet | tee -a $FILE
-printf "\nclusternetwork: \n" >> $FILE
-oc get clusternetwork | tee -a $FILE
+printf "\n\n==Network==\n"
+printf "\nhostsubnet: \n"
+oc get hostsubnet
+printf "\nclusternetwork: \n"
+oc get clusternetwork
 
 # If networkpolicy plugin detected, get policies info
 if grepMatch="$(oc get clusternetwork | grep 'networkpolicy')" ; then
-  printf "\n\n==Detected networkpolicy plugin==\n" >> $FILE
-  printf "\nnetnamespace: \n" >> $FILE
-  oc get netnamespace | tee -a $FILE
-  printf "\nGetting network policies for $NS: \n" >> $FILE
-  oc get networkpolicy $NS | tee -a $FILE
-  printf "\nDescribing network policies for $NS: \n" >> $FILE
-  oc describe networkpolicy $NS | tee -a $FILE
-  printf "\nGetting network policies for -n default: \n" >> $FILE
-  oc get networkpolicy -n default | tee -a $FILE
-  printf "\nDescribing network policies for -n default: \n" >> $FILE
-  oc describe networkpolicy -n default | tee -a $FILE
-  printf "\n==End of networkpolicy plugin section==\n" >> $FILE
+  printf "\n\n==Detected networkpolicy plugin==\n"
+  printf "\nnetnamespace: \n"
+  oc get netnamespace
+  printf "\nGetting network policies for $NS: \n"
+  oc get networkpolicy $NS
+  printf "\nDescribing network policies for $NS: \n"
+  oc describe networkpolicy $NS
+  
+  # Skip -n default if using --all-namespaces
+  if $FILE !="--all-namespaces" ; then
+    printf "\nGetting network policies for -n default: \n"
+    oc get networkpolicy -n default
+    printf "\nDescribing network policies for -n default: \n"
+    oc describe networkpolicy -n default
+  fi
+  
+  printf "\n==End of networkpolicy plugin section==\n"
+
 else
-  printf "\n==No networkpolicy plugin detected==\n" >> $FILE
+
+    printf "\n==No networkpolicy plugin detected==\n"
 fi
 
-printf "\n==End of network section==\n\n" >> $FILE
+printf "\n==End of network section==\n\n"
+
 
 # Deployment pods in error
-if grepMatch="$(oc get pods | grep deploy | grep Error | awk '{print $1}')" ; then
-  printf "\n==Deployment pods in error:==\n" >> $FILE
-  printf "\n\noc get pods:\n" >> $FILE
-  oc get pods | grep deploy | grep Error | awk '{print $1}' | while read data; do oc get pods $data -o yaml ; done | tee -a $FILE
-  printf "\n\noc describe pods:\n" >> $FILE
-  oc get pods | grep deploy | grep Error | awk '{print $1}' | while read data; do oc describe pods $data ; done | tee -a $FILE
-  printf "\n\noc describe rc:\n" >> $FILE
-  oc get pods | grep deploy | grep Error | awk '{print $1}' | echo ${1:0:${#1}-7} | while read data; do oc describe rc $data ; done | tee -a $FILE
-  printf "\n\noc logs:\n" >> $FILE
-  oc get pods | grep deploy | grep Error | awk '{print $1}' | while read data; do oc logs $data ; done | tee -a $FILE
-  printf "\n\noc describe dc:\n" >> $FILE
-  oc get pods | grep deploy | grep Error | awk '{print $1}' | cut -d'-' -f1 | while read data; do oc describe dc $data ; done | tee -a $FILE
+if grepMatch="$(oc get pods $NS | grep deploy | grep Error | awk '{print $1}')" ; then
+  printf "\n==Deployment pods in error==\n"
+  printf "\n\noc get pods $NS:\n"
+  oc get pods $NS | grep deploy | grep Error | awk '{print $1}' | while read data; do oc get pods $NS $data -o yaml ; done
+  printf "\n\noc describe pods $NS:\n"
+  oc get pods $NS | grep deploy | grep Error | awk '{print $1}' | while read data; do oc describe pods $NS $data ; done
+  printf "\n\noc describe rc $NS:\n"
+  oc get pods $NS | grep deploy | grep Error | awk '{print $1}' | echo ${1:0:${#1}-7} | while read data; do oc describe rc $NS $data ; done
+  printf "\n\noc logs $NS:\n"
+  oc get pods $NS | grep deploy | grep Error | awk '{print $1}' | while read data; do oc logs $NS $data ; done
+  printf "\n\noc describe dc $NS:\n"
+  oc get pods $NS | grep deploy | grep Error | awk '{print $1}' | cut -d'-' -f1 | while read data; do oc describe dc $NS $data ; done
 else
-  printf "\n==No deployment pods in error detected==\n" >> $FILE
+  printf "\n==No deployment pods in error detected==\n"
 fi
-printf "\n==End of deployment pods section==\n\n" >> $FILE
+printf "\n==End of deployment pods section==\n\n"
 
 # Events
-printf "\n\n==Events==\n" >> $FILE
-printf "\noc get events $NS:\n" >> $FILE
-oc get events $NS | tee -a $FILE
-printf "\noc get events -n default:\n" >> $FILE
-oc get events -n default | tee -a $FILE
-printf "\n==End of events section==\n\n" >> $FILE
+printf "\n\n==Events==\n"
+printf "\noc get events $NS:\n"
+oc get events $NS
+printf "\noc get events -n default:\n"
+oc get events -n default
+printf "\n==End of events section==\n\n"
 
-printf "\n\n==EOF==\n\n" >> $FILE
+# docker
+printf "\n\n==Docker==\n"
+printf "\ndocker ps -a (this will fail if user is not privileged):\n"
+docker ps -a
+printf "\n\n==End of Docker section==\n"
+
+printf "\n\n==Finished==\n"
+date
+
+} | tee $FILE
+
+# End of redirected output
