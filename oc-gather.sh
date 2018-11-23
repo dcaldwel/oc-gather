@@ -109,7 +109,7 @@ if grepMatch="$(oc get pods | grep deploy | grep Error | awk '{print $1}')" ; th
   printf "\n\noc describe pods:\n" >> $FILE
   oc get pods | grep deploy | grep Error | awk '{print $1}' | while read data; do oc describe pods $data ; done | tee -a $FILE
   printf "\n\noc describe rc:\n" >> $FILE
-  oc get pods | grep deploy | grep Error | awk '{print $1}' | echo ${1:0:${#1}-7} | while read data; do oc describe rc $data ; done
+  oc get pods | grep deploy | grep Error | awk '{print $1}' | echo ${1:0:${#1}-7} | while read data; do oc describe rc $data ; done | tee -a $FILE
   printf "\n\noc logs:\n" >> $FILE
   oc get pods | grep deploy | grep Error | awk '{print $1}' | while read data; do oc logs $data ; done | tee -a $FILE
   printf "\n\noc describe dc:\n" >> $FILE
