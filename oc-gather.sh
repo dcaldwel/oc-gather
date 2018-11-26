@@ -139,8 +139,10 @@ if grepMatch="$(oc get clusternetwork | grep 'networkpolicy')" ; then
   printf "\nDescribing network policies for $NS: \n"
   oc describe networkpolicy $NS
   
-  # Skip -n default if using --all-namespaces
-  if $FILE !="--all-namespaces" ; then
+  # Skip if using --all-namespaces
+  if NS="--all-namespaces" ; then
+    printf "\n[Skipping as namespace = --all-namespaces]\n"
+  else
     printf "\nGetting network policies for -n default: \n"
     oc get networkpolicy -n default
     printf "\nDescribing network policies for -n default: \n"
@@ -162,14 +164,22 @@ if grepMatch="$(oc get pods $NS | grep deploy | grep Error | awk '{print $1}')" 
   printf "\n==Deployment pods in error==\n"
   printf "\n\noc get pods $NS:\n"
   oc get pods $NS | grep deploy | grep Error | awk '{print $1}' | while read data; do oc get pods $NS $data -o yaml ; done
-  printf "\n\noc describe pods $NS:\n"
-  oc get pods $NS | grep deploy | grep Error | awk '{print $1}' | while read data; do oc describe pods $NS $data ; done
-  printf "\n\noc describe rc $NS:\n"
-  oc get pods $NS | grep deploy | grep Error | awk '{print $1}' | echo ${1:0:${#1}-7} | while read data; do oc describe rc $NS $data ; done
-  printf "\n\noc logs $NS:\n"
-  oc get pods $NS | grep deploy | grep Error | awk '{print $1}' | while read data; do oc logs $NS $data ; done
-  printf "\n\noc describe dc $NS:\n"
-  oc get pods $NS | grep deploy | grep Error | awk '{print $1}' | cut -d'-' -f1 | while read data; do oc describe dc $NS $data ; done
+
+  # Skips some oc commands if $NS = "--all-namespaces"
+  if NS="--all-namespaces" ; then
+    printf "\n[Skipping as namespace = --all-namespaces]\n"
+  else
+    printf "\n\noc describe pods $NS:\n"
+    oc get pods $NS | grep deploy | grep Error | awk '{print $1}' | while read data; do oc describe pods $NS $data ; done
+    # describe the rc using the awk output and removing the last seven characters ('-deploy') using ${1:0:${#1}-7}:
+    printf "\n\noc describe rc $NS:\n"
+    oc get pods $NS | grep deploy | grep Error | awk '{print $1}' | echo ${1:0:${#1}-7} | while read data; do oc describe rc $NS $data ; done
+    printf "\n\noc logs $NS:\n"
+    oc get pods $NS | grep deploy | grep Error | awk '{print $1}' | while read data; do oc logs $NS $data ; done
+    # describe some deployment configs - need to cut the awk output at the first '-'
+    printf "\n\noc describe dc $NS:\n"
+    oc get pods $NS | grep deploy | grep Error | awk '{print $1}' | cut -d'-' -f1 | while read data; do oc describe dc $NS $data ; done
+  fi
 else
   printf "\n==No deployment pods in error detected==\n"
 fi
@@ -192,6 +202,7 @@ printf "\n\n==End of Docker section==\n"
 printf "\n\n==Finished==\n"
 date
 
+# End of redirected output
 } | tee $FILE
 
-# End of redirected output
+
