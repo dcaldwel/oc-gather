@@ -137,8 +137,7 @@ if grepMatch="$(oc get clusternetwork | grep 'networkpolicy')" ; then
   printf "\nGetting network policies for $NS: \n"
   oc get networkpolicy $NS
   printf "\nDescribing network policies for $NS: \n"
-  oc describe networkpolicy $NS
-  
+  oc describe networkpolicy $NS 
   # Skip if using --all-namespaces
   if NS="--all-namespaces" ; then
     printf "\n[Skipping as namespace = --all-namespaces]\n"
@@ -148,14 +147,10 @@ if grepMatch="$(oc get clusternetwork | grep 'networkpolicy')" ; then
     printf "\nDescribing network policies for -n default: \n"
     oc describe networkpolicy -n default
   fi
-  
   printf "\n==End of networkpolicy plugin section==\n"
-
 else
-
-    printf "\n==No networkpolicy plugin detected==\n"
+  printf "\n==No networkpolicy plugin detected==\n"
 fi
-
 printf "\n==End of network section==\n\n"
 
 
