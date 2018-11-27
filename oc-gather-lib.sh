@@ -1,6 +1,6 @@
 #!/bin/sh
 
-function misc() {
+function gather_misc() {
 # Miscellaneous oc commands
 printf "\n\n==Miscellaneous oc commands==\n"
 printf "\nLogged in to OpenShift as: \n"
@@ -12,7 +12,7 @@ oc projects
 printf "\n==End of miscellaneous section==\n\n"
 }
 
-function version() {
+function gather_version() {
 # Versions
 printf "\n\n==Version info==\n\n"
 oc version
@@ -24,7 +24,7 @@ printf "\n"
 ansible --version 
 }
 
-function nodes() {
+function gather_nodes() {
 # Nodes
 printf "\n\n==Nodes==\n"
 printf "\noc get nodes\n"
@@ -32,7 +32,7 @@ oc get nodes
 printf "\n==End of nodes section==\n\n"
 }
 
-function check_etcd() {
+function gather_etcd() {
 # etcd
 printf "\n\n==etcd==\n"
 printf "\netcdctl cluster-health:\n"
@@ -40,7 +40,7 @@ etcdctl cluster-health
 printf "\n==End of etcd section==\n"
 }
 
-function storage() {
+function gather_storage() {
 # Storage
 printf "\n\n==Storage==\n"
 printf "\nLocal storage:\n"
@@ -59,6 +59,7 @@ fi
 printf "\n==End of storage section=="
 }
 
+function gather_network() {
 # Network
 printf "\n\n==Network==\n"
 printf "\nhostsubnet: \n"
@@ -96,7 +97,7 @@ ovs-ofctl -O OpenFlow13 dump-ports-desc br0
 
 printf "\n==End of network section==\n\n"
 
-
+function gather_dpeloyment_errors() {
 # Deployment pods in error
 if grepMatch="$(oc get pods $NS | grep deploy | grep Error | awk '{print $1}')" ; then
   printf "\n==Deployment pods in error==\n"
@@ -122,7 +123,9 @@ else
   printf "\n==No deployment pods in error detected==\n"
 fi
 printf "\n==End of deployment pods section==\n\n"
+}
 
+function gather_events() {
 # Events
 printf "\n\n==Events==\n"
 printf "\noc get events $NS:\n"
@@ -130,9 +133,12 @@ oc get events $NS
 printf "\noc get events -n default:\n"
 oc get events -n default
 printf "\n==End of events section==\n\n"
+}
 
+function gather_docker() {
 # docker
 printf "\n\n==Docker==\n"
 printf "\ndocker ps -a (this will fail if user is not privileged):\n"
 docker ps -a
 printf "\n\n==End of Docker section==\n"
+}
