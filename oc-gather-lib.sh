@@ -96,8 +96,9 @@ ovs-vsctl list-br
 ovs-ofctl -O OpenFlow13 dump-ports-desc br0
 
 printf "\n==End of network section==\n\n"
+}
 
-function gather_dpeloyment_errors() {
+function gather_deployment_errors() {
 # Deployment pods in error
 if grepMatch="$(oc get pods $NS | grep deploy | grep Error | awk '{print $1}')" ; then
   printf "\n==Deployment pods in error==\n"
