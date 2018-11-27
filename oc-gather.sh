@@ -151,6 +151,12 @@ if grepMatch="$(oc get clusternetwork | grep 'networkpolicy')" ; then
 else
   printf "\n==No networkpolicy plugin detected==\n"
 fi
+
+printf "\nip route:\n"
+ip route
+ovs-vsctl list-br
+ovs-ofctl -O OpenFlow13 dump-ports-desc br0
+
 printf "\n==End of network section==\n\n"
 
 
@@ -158,7 +164,7 @@ printf "\n==End of network section==\n\n"
 if grepMatch="$(oc get pods $NS | grep deploy | grep Error | awk '{print $1}')" ; then
   printf "\n==Deployment pods in error==\n"
   printf "\n\noc get pods $NS:\n"
-  oc get pods $NS | grep deploy | grep Error | awk '{print $1}' | while read data; do oc get pods $NS $data -o yaml ; done
+  oc get pods $NS | grep deploy | grep Error | awk '{print "-n " $1 " " $2}' | while read data; do oc get pods $data -o yaml ; done
 
   # Skips some oc commands if $NS = "--all-namespaces"
   if NS="--all-namespaces" ; then
