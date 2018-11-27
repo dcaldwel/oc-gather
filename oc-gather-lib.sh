@@ -1,80 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 
-# Borrowed this short parseArgs() function from https://stackoverflow.com/questions/255898/how-to-iterate-over-arguments-in-a-bash-script
-parseArgs() {
-while [[ $# > 0 ]] ; do
-  case "$1" in
-    -f)
-      FILE=${2}
-      shift
-      ;;
-    -n)
-      NS=${2}
-      ;;
-  esac
-  shift
-done
-}
-
-# Get output file string and optional namespace string
-parseArgs "$@"
-
-
-# Exit if $FILE is blank
-if [[ ! $FILE = *[!\ ]* ]] 
-  then
-    printf "\nNo output file supplied.\nUsage: oc-gather -f <output file> [-n <namespace>]\n\n"
-    exit 1
-fi
-
-# Exit if $FILE is set to '-'
-if [[ ! $FILE = *[!\-]* ]]
-  then
-    printf "\nNo output file supplied.\nUsage: oc-gather -f <output file> [-n <namespace>]\n\n"
-    exit 1
-fi
-
-# Exit if $FILE exists
-if test -e $FILE
-    then
-      printf "\nOutput file $FILE already exists. Please move/rename/delete existing output file and retry.\n\n"
-      exit 1
-fi
-
-# Create the file specified by $FILE
-# but exit if touch return an error value (non-zero)
-if touch $FILE ; then
-  printf "\n$FILE created\n\n"
-else
-  printf "\nError creating file. Please check that any relevant directories exist.\n\n"
-  exit 1
-fi
-
-
-# If $NS is blank, set it to '--all-namespaces'
-if [[ ! $NS = *[!\ ]* ]] ; then
-  NS="--all-namespaces"
-  printf "\n\$NS set to $NS'\n\n"
-  # Prepend '-n ' to given namespace for ease later
-else
-  NS="-n $NS"
-fi
-
-
-##############
-# Gather info#
-##############
-
-source ./oc-gather-lib.sh
-
-# Start of redirected commands
-{
-
-# Boilerplate
-printf "==Started==\n"
-date
-printf "\nOptions used: output file = $FILE, namespace string = \'$NS\'"
-
+function misc() {
 # Miscellaneous oc commands
 printf "\n\n==Miscellaneous oc commands==\n"
 printf "\nLogged in to OpenShift as: \n"
@@ -84,7 +10,9 @@ oc status -v
 printf "\n\nProjects:\n"
 oc projects
 printf "\n==End of miscellaneous section==\n\n"
+}
 
+function version() {
 # Versions
 printf "\n\n==Version info==\n\n"
 oc version
@@ -94,19 +22,25 @@ printf "\n"
 etcdctl --version
 printf "\n"
 ansible --version 
+}
 
+function nodes() {
 # Nodes
 printf "\n\n==Nodes==\n"
 printf "\noc get nodes\n"
 oc get nodes
 printf "\n==End of nodes section==\n\n"
+}
 
+function check_etcd() {
 # etcd
 printf "\n\n==etcd==\n"
 printf "\netcdctl cluster-health:\n"
 etcdctl cluster-health
 printf "\n==End of etcd section==\n"
+}
 
+function storage() {
 # Storage
 printf "\n\n==Storage==\n"
 printf "\nLocal storage:\n"
@@ -123,6 +57,7 @@ else
   oc get pvc | grep -v 'NAME' | awk '{print $1}' | while read data; do oc describe pvc $data ; done
 fi
 printf "\n==End of storage section=="
+}
 
 # Network
 printf "\n\n==Network==\n"
@@ -201,11 +136,3 @@ printf "\n\n==Docker==\n"
 printf "\ndocker ps -a (this will fail if user is not privileged):\n"
 docker ps -a
 printf "\n\n==End of Docker section==\n"
-
-printf "\n\n==Finished==\n"
-date
-
-# End of redirected output
-} | tee $FILE
-
-
