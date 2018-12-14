@@ -158,7 +158,7 @@ function gather_network() {
     printf "\nDescribing network policies for $NS: \n"
     oc describe networkpolicy $NS 
     # Skip if using --all-namespaces
-    if NS="--all-namespaces" ; then
+    if [ "$NS" == "--all-namespaces" ] ; then
       printf "\n[Skipping as namespace = --all-namespaces]\n"
     else
       printf "\nGetting network policies for -n default: \n"
@@ -187,7 +187,7 @@ function gather_deployment_errors() {
     oc get pods $NS | grep deploy | grep Error | awk '{print "-n " $1 " " $2}' | while read data; do oc get pods $data -o yaml ; done
 
     # Skips some oc commands if $NS = "--all-namespaces"
-    if NS="--all-namespaces" ; then
+    if [ "$NS" == "--all-namespaces" ] ; then
       printf "\n[Skipping oc describe pods as namespace = --all-namespaces]\n"
     else
       printf "\n\noc describe pods $NS:\n"
@@ -210,13 +210,15 @@ function gather_deployment_errors() {
 
 function gather_pod_errors() {
 # Pods in error. Includes deployment pods.
+  # printf "\n+++CHECKPOINT 1 - $NS+++\n"
   if grepMatch="$(oc get pods $NS | grep Error | awk '{print $1}')" ; then
     printf "\n==Pods in error. For oc describe to run over error pods, supply a namespace using -n ==\n"
     printf "\n\noc get pods $NS:\n"
     oc get pods $NS | grep Error | awk '{print "-n " $1 " " $2}' | while read data; do oc get pods $data -o yaml ; done
-
-    # Skips some oc commands if $NS = "--all-namespaces"
-    if NS="--all-namespaces" ; then
+    # printf "\n+++CHECKPOINT 2 - $NS+++\n"
+    # Skips some oc commands if NS = "--all-namespaces"
+    if [ "$NS" == "--all-namespaces" ] ; then
+      # printf "\n+++CHECKPOINT 3 - $NS+++\n"
       printf "\n[Skipping oc describe pods as namespace = --all-namespaces]\n"
       # printf "\n+++NS = $NS+++"
     else
