@@ -26,8 +26,9 @@ done
 ####
 
 function gather_validate_options() {
-# Exit if $FILE is blank
-  printf "\n******Validating******\n"
+# Validate commandline options. Check for file (-f) and namespace (-n)
+
+  # Exit if $FILE is blank
   if [[ ! $FILE = *[!\ ]* ]]
     then
       printf "\nNo output file supplied.\nUsage: oc-gather -f <output file> [-n <namespace>]\n\n"
@@ -68,12 +69,11 @@ function gather_validate_options() {
   fi
   
   printf "\n\$NS set to \'$NS\'\n\n"
-  printf "\n******Validated******\n\n"
 }
 
 function gather_boilerplate() {
 # Boilerplate
-  printf "==Started gather==\n"
+  printf "\n==Started gather==\n"
   date
   printf "\nOptions used: output file = $FILE, namespace string = \'$NS\'"
   printf "\nFunction flags: \'$FLAGS\'"
@@ -157,9 +157,11 @@ function gather_network() {
     oc get networkpolicy $NS
     printf "\nDescribing network policies for $NS: \n"
     oc describe networkpolicy $NS 
+
     # Skip if using --all-namespaces
     if [ "$NS" == "--all-namespaces" ] ; then
       printf "\n[Skipping as namespace = --all-namespaces]\n"
+
     else
       printf "\nGetting network policies for -n default: \n"
       oc get networkpolicy -n default
@@ -167,10 +169,13 @@ function gather_network() {
       oc describe networkpolicy -n default
     fi
     printf "\n==End of networkpolicy plugin section==\n"
+
   else
     printf "\n==No networkpolicy plugin detected==\n"
+
   fi
 
+  # Get ip route info
   printf "\nip route:\n"
   ip route
   ovs-vsctl list-br
@@ -210,17 +215,17 @@ function gather_deployment_errors() {
 
 function gather_pod_errors() {
 # Pods in error. Includes deployment pods.
-  # printf "\n+++CHECKPOINT 1 - $NS+++\n"
+
+  # If we find the string 'Error' in the oc output, get those pods
   if grepMatch="$(oc get pods $NS | grep Error | awk '{print $1}')" ; then
     printf "\n==Pods in error. For oc describe to run over error pods, supply a namespace using -n ==\n"
     printf "\n\noc get pods $NS:\n"
     oc get pods $NS | grep Error | awk '{print "-n " $1 " " $2}' | while read data; do oc get pods $data -o yaml ; done
-    # printf "\n+++CHECKPOINT 2 - $NS+++\n"
-    # Skips some oc commands if NS = "--all-namespaces"
+
+    # Skips some oc commands if NS = "--all-namespaces"    
     if [ "$NS" == "--all-namespaces" ] ; then
-      # printf "\n+++CHECKPOINT 3 - $NS+++\n"
       printf "\n[Skipping oc describe pods as namespace = --all-namespaces]\n"
-      # printf "\n+++NS = $NS+++"
+          
     else
       printf "\n\noc describe pods $NS:\n"
       oc get pods $NS  | grep Error | awk '{print $1}' | while read data; do oc describe pods $NS $data ; done
@@ -233,6 +238,7 @@ function gather_pod_errors() {
       printf "\n\noc describe dc $NS:\n"
       oc get pods $NS | grep deploy | grep Error | awk '{print $1}' | cut -d'-' -f1 | while read data; do oc describe dc $NS $data ; done
     fi
+  
   else
     printf "\n==No pods in error detected==\n"
   fi
@@ -257,3 +263,14 @@ function gather_docker() {
   docker ps -a
   printf "\n\n==End of Docker section==\n"
 }
+
+function gather_endpoints() {
+# Get endpoints
+  printf "\n\n==Endpoints==\n"
+  printf "\noc get ep $NS\n"
+  oc get ep $NS
+  # describe the endpoints
+  printf "\n\noc describe ep $NS:\n"
+  oc get ep $NS | awk '{print $1}' | while read data; do oc describe ep $NS $data ; done
+}
+
