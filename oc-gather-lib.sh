@@ -1,6 +1,6 @@
 #!/bin/bash
 
-####
+
 # Borrowed this short parseArgs() function from https://stackoverflow.com/questions/255898/how-to-iterate-over-arguments-in-a-bash-script
 # This function reads the commandline options and populates variables with their value for use in the test functions.
 # Options can be in any order and can be added to by adding cases below. Don't forget to use 'shift' after a true case (apart from the last case).
@@ -27,6 +27,7 @@ done
 
 function gather_validate_options() {
 # Exit if $FILE is blank
+  printf "\n******Validating******\n"
   if [[ ! $FILE = *[!\ ]* ]]
     then
       printf "\nNo output file supplied.\nUsage: oc-gather -f <output file> [-n <namespace>]\n\n"
@@ -48,7 +49,7 @@ function gather_validate_options() {
   fi
 
 # Create the file specified by $FILE
-# but exit if touch return an error value (non-zero)
+# but exit if touch returns an error value (non-zero)
   if touch $FILE ; then
     printf "\n$FILE created\n\n"
   else
@@ -59,12 +60,15 @@ function gather_validate_options() {
 
 # If $NS is blank, set it to '--all-namespaces'
   if [[ ! $NS = *[!\ ]* ]] ; then
+    printf "\nSetting NS to \'--all-namespaces\'"
     NS="--all-namespaces"
-    printf "\n\$NS set to $NS'\n\n"
     # Prepend '-n ' to given namespace for ease later
   else
     NS="-n $NS"
   fi
+  
+  printf "\n\$NS set to \'$NS\'\n\n"
+  printf "\n******Validated******\n\n"
 }
 
 function gather_boilerplate() {
@@ -202,6 +206,36 @@ function gather_deployment_errors() {
   fi
   
   printf "\n==End of deployment pods section==\n\n"
+}
+
+function gather_pod_errors() {
+# Pods in error. Includes deployment pods.
+  if grepMatch="$(oc get pods $NS | grep Error | awk '{print $1}')" ; then
+    printf "\n==Pods in error. For oc describe to run over error pods, supply a namespace using -n ==\n"
+    printf "\n\noc get pods $NS:\n"
+    oc get pods $NS | grep Error | awk '{print "-n " $1 " " $2}' | while read data; do oc get pods $data -o yaml ; done
+
+    # Skips some oc commands if $NS = "--all-namespaces"
+    if NS="--all-namespaces" ; then
+      printf "\n[Skipping oc describe pods as namespace = --all-namespaces]\n"
+      # printf "\n+++NS = $NS+++"
+    else
+      printf "\n\noc describe pods $NS:\n"
+      oc get pods $NS  | grep Error | awk '{print $1}' | while read data; do oc describe pods $NS $data ; done
+      # describe the rc using the awk output and removing the last seven characters ('-deploy') using ${1:0:${#1}-7}:
+      printf "\n\noc describe rc $NS:\n"
+      oc get pods $NS | grep deploy | grep Error | awk '{print $1}' | echo ${1:0:${#1}-7} | while read data; do oc describe rc $NS $data ; done
+      printf "\n\noc logs $NS:\n"
+      oc get pods $NS | grep Error | awk '{print $1}' | while read data; do oc logs $NS $data ; done
+      # describe some deployment configs - need to cut the awk output at the first '-'
+      printf "\n\noc describe dc $NS:\n"
+      oc get pods $NS | grep deploy | grep Error | awk '{print $1}' | cut -d'-' -f1 | while read data; do oc describe dc $NS $data ; done
+    fi
+  else
+    printf "\n==No pods in error detected==\n"
+  fi
+
+  printf "\n==End of pods in error section==\n\n"
 }
 
 function gather_events() {
