@@ -147,30 +147,36 @@ function gather_network() {
   oc get hostsubnet
   printf "\nclusternetwork: \n"
   oc get clusternetwork
+  printf "\nnetnamespace: \n"
+  oc get netnamespace
 
 # If networkpolicy plugin detected, get policies info
   if grepMatch="$(oc get clusternetwork | grep 'networkpolicy')" ; then
     printf "\n\n==Detected networkpolicy plugin==\n"
-    printf "\nnetnamespace: \n"
-    oc get netnamespace
     printf "\nGetting network policies for $NS: \n"
     oc get networkpolicy $NS
     printf "\nDescribing network policies for $NS: \n"
     oc describe networkpolicy $NS 
 
     # Skip if using --all-namespaces
+
     if [ "$NS" == "--all-namespaces" ] ; then
       printf "\n[Skipping as namespace = --all-namespaces]\n"
 
     else
-      printf "\nGetting network policies for -n default: \n"
-      oc get networkpolicy -n default
-      printf "\nDescribing network policies for -n default: \n"
-      oc describe networkpolicy -n default
+
+        if [ "$NS" != "-n default" ] ; then
+          printf "\nGetting network policies for -n default: \n"
+          oc get networkpolicy -n default
+          printf "\nDescribing network policies for -n default: \n"
+          oc describe networkpolicy -n default
+      fi
     fi
+
     printf "\n==End of networkpolicy plugin section==\n"
 
   else
+
     printf "\n==No networkpolicy plugin detected==\n"
 
   fi
@@ -277,6 +283,12 @@ function gather_endpoints() {
   printf "\noc get ep $NS\n"
   oc get ep $NS
   # describe the endpoints
-  printf "\n\noc describe ep $NS:\n"
-  oc get ep $NS | awk '{print $1}' | while read data; do oc describe ep $NS $data ; done
+
+  if [ "$NS" == "--all-namespaces" ] ; then
+    printf "\n\noc describe ep -n default:\n"
+    oc get ep -n default | grep -v 'NAME' | awk '{print $1}' | while read data; do oc describe ep -n default $data ; done
+  else
+    printf "\n\noc describe ep $NS:\n"
+    oc get ep $NS | grep -v 'NAME' | awk '{print $1}' | while read data; do oc describe ep $NS $data ; done
+  fi
 }

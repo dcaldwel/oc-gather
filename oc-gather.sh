@@ -10,7 +10,7 @@
 # Test functions are defined in './oc-gather-lib.sh.'
 # New functions should be prefixed with 'gather_' to distinguish then from shell commands and binaries.
 # FLAGS="gather_boilerplate gather_misc gather_version gather_nodes gather_etcd gather_storage gather_network gather_pod_errors gather_deployment_errors gather_events gather_docker"
-FLAGS="gather_endpoints"
+FLAGS="gather_network"
 
 # Load test functions library
 source ./oc-gather-lib.sh
@@ -30,6 +30,6 @@ for ENABLED_FUNCTION in $FLAGS ; do
   $ENABLED_FUNCTION
 done
 
-printf "\n==End of gather==\n\n"
+printf "\nEOF\n\n"
 
 } | tee $FILE
