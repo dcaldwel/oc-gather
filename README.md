@@ -3,7 +3,7 @@
 ## Summary
 A small collection of two bash scripts to automate the gathering of frequently collected logs and ``oc`` commands used for troubleshooting OpenShift.
 
-``oc-gather.sh`` is the main control file. It simply executes each test function based upon simple logic. The test functions are stored in ``oc-gather-lib.sh``. 
+``oc-gather.sh`` is the main control file. It executes each test function based upon simple logic. The test functions are stored in ``oc-gather-lib.sh``. 
 
 ## Specification
 ### Usage
