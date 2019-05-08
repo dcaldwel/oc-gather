@@ -264,6 +264,13 @@ function gather_docker() {
   printf "\n\n==End of Docker section==\n"
 }
 
+function gather_sdn_logs() {
+# Iterate oc logs over the sdn pods found in the openshift-sdn namespace
+  printf "\n\n==SDN Logs==\n"
+  printf "\noc logs <sdn pods> -n openshift-sdn:\n"
+  oc get pods -n openshift-sdn | awk '{print $1}' | grep sdn | while read data; do oc logs -n openshift-sdn $data ; done
+}
+
 function gather_endpoints() {
 # Get endpoints
   printf "\n\n==Endpoints==\n"
@@ -273,4 +280,3 @@ function gather_endpoints() {
   printf "\n\noc describe ep $NS:\n"
   oc get ep $NS | awk '{print $1}' | while read data; do oc describe ep $NS $data ; done
 }
-
