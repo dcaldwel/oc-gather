@@ -15,7 +15,11 @@
 # Load test functions library
 source ./oc-gather-lib.sh
 
-# Get commandline arguments and place into $FILE and $NS
+# Get commandline arguments and place into $FILE, $NS and $MOD.
+# $FILE == local filename to output to.
+# $NS == OpenShift namespace context in which to run the commands.
+# $MOD == A test module to run (default is to run all test modules).
+
 parseArgs "$@"
 
 # Start of redirected commands into log file $FILE
@@ -25,7 +29,7 @@ parseArgs "$@"
 gather_validate_options
 
 # Execute enabled tests
-for ENABLED_FUNCTION in $FLAGS ; do
+for ENABLED_FUNCTION in $MOD ; do
 #  printf "\n+++NS = \'$NS\'+++\n"
   $ENABLED_FUNCTION
 done

@@ -1,9 +1,14 @@
 #!/bin/bash
 
 
-# Borrowed this short parseArgs() function from https://stackoverflow.com/questions/255898/how-to-iterate-over-arguments-in-a-bash-script
-# This function reads the commandline options and populates variables with their value for use in the test functions.
-# Options can be in any order and can be added to by adding cases below. Don't forget to use 'shift' after a true case (apart from the last case).
+# Borrowed this short parseArgs() function from 
+# https://stackoverflow.com/questions/255898/how-to-iterate-over-arguments-in-a-bash-script
+# This function reads the commandline options and populates variables with their value for 
+# use in the test functions.
+# 
+# Options can be in any order and can be added to by adding cases below. Don't forget to 
+# use the 'shift' command after a true case (apart from the last case).
+
 parseArgs() {
 while [[ $# > 0 ]] ; do
   case "$1" in
@@ -13,6 +18,10 @@ while [[ $# > 0 ]] ; do
       ;;
     -n)
       NS=${2}
+      shift
+      ;;
+    -m)
+      MOD=${2}
       ;;
   esac
   shift
@@ -69,6 +78,14 @@ function gather_validate_options() {
   fi
   
   printf "\n\$NS set to \'$NS\'\n\n"
+
+# If $MOD is empty, set $MOD to $FLAGS
+  if [[ ! $MOD = *[!\ ]* ]] ; then
+    printf "\nSetting MOD to FLAGS"
+    MOD="$FLAGS"
+  fi
+
+
 }
 
 function gather_boilerplate() {
@@ -76,7 +93,7 @@ function gather_boilerplate() {
   printf "\n==Started gather==\n"
   date
   printf "\nOptions used: output file = $FILE, namespace string = \'$NS\'"
-  printf "\nFunction flags: \'$FLAGS\'"
+  printf "\nFunction flags: \'$MOD\'"
 }
 
 function gather_misc() {

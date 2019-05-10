@@ -7,9 +7,21 @@ A small collection of two bash scripts to automate the gathering of frequently c
 
 ## Specification
 ### Usage
-``oc-gather -f <output file> [-n <namespace>]``
-  
+``oc-gather -f <output file> [-n <namespace>] [-m <test module(s) to run>]``
+#### Examples
+To execute all tests: ``$ ./oc-gather.sh -f output.log``. Because no namespace is specified, the ``default`` namespace will be used for some tests and some tests will be skipped.
+
+To execute all tests within the ``myproject`` namespace: ``$ oc-gather.sh -f output.log -n myproject``.
+
+To execute only the ``gather_version`` module within ``myproject`` namespace: ``$ oc-gather.sh -f output.log -n myproject -m gather_version``.
+
+To execute only the tests ``gather_version`` and ``gather_network`` within the namespace ``myproject``: ``$ oc-gather.sh -f output.log -n myproject -m "gather_version gather_network"``.
+
+To ensure that certain privileged functions succeed: ``$ sudo oc-gather.sh -f output.log -n myproject -m "gather_version gather_network"``.
 ### General Functionality
 *oc-gather* gathers logs and ``oc`` command output for the currently logged-in OpenShift cluster. It will write to the output file specified by ``-f``. If an optional namespace is supplied, that namespace will be the focus for most of the ``oc`` commands, otherwise, the ``--all-namespaces`` option will be used in place of ``-n <namespace>``.
 
+If you wish to run one or more specific test functions, they can be specified using ``-m``. If ``-m`` does not exist, then all test function modules that are present in the ``FLAGS`` variable (found in ``oc-gather.sh``) will be executed. The test function names can be chosen from those listed in the ``FLAGS=`` directive in ``oc-gather.sh``. If you wish to specify more than one test function, surround them all in double quotes.
+
 If this script is *not* executed as a privileged user then certain commands -- such as ``docker ps`` -- for example, will be fail. All ``oc`` commands will function regardless, provided the logged-in OpenShift user is has sufficient privileges.
+
