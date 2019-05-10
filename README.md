@@ -5,8 +5,8 @@ A small collection of two bash scripts to automate the gathering of frequently c
 
 ``oc-gather.sh`` is the main control file. It executes each test function based upon simple logic. The test functions are stored in ``oc-gather-lib.sh``. 
 
-*Note*
-- You will need to be already logged into your OpenShift cluster before running this script.
+**Note**
+*You will need to be already logged into your OpenShift cluster before running this script.*
 
 ## Specification
 ### Usage
