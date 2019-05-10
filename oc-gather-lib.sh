@@ -36,18 +36,18 @@ done
 
 function gather_validate_options() {
 # Validate commandline options. Check for file (-f) and namespace (-n)
-
+printf "\n[Pre-flight checks]\n"
   # Exit if $FILE is blank
   if [[ ! $FILE = *[!\ ]* ]]
     then
-      printf "\nNo output file supplied.\nUsage: oc-gather -f <output file> [-n <namespace>]\n\n"
+      printf "\nNo output file supplied.\nUsage: oc-gather -f <output file> [-n <namespace>]\n"
       exit 1
   fi
 
 # Exit if $FILE is set to '-'
   if [[ ! $FILE = *[!\-]* ]]
     then
-      printf "\nNo output file supplied.\nUsage: oc-gather -f <output file> [-n <namespace>]\n\n"
+      printf "\nNo output file supplied.\nUsage: oc-gather -f <output file> [-n <namespace>]\n"
       exit 1
   fi
 
@@ -61,7 +61,7 @@ function gather_validate_options() {
 # Create the file specified by $FILE
 # but exit if touch returns an error value (non-zero)
   if touch $FILE ; then
-    printf "\n$FILE created\n\n"
+    printf "\n$FILE created\n"
   else
     printf "\nError creating file. Please check that any relevant directories exist.\n\n"
     exit 1
@@ -77,20 +77,19 @@ function gather_validate_options() {
     NS="-n $NS"
   fi
   
-  printf "\n\$NS set to \'$NS\'\n\n"
+  printf "\n\$NS set to \'$NS\'\n"
 
 # If $MOD is empty, set $MOD to $FLAGS
   if [[ ! $MOD = *[!\ ]* ]] ; then
-    printf "\nSetting MOD to FLAGS"
+    printf "\nSetting MOD to FLAGS\n"
     MOD="$FLAGS"
   fi
-
-
+printf "\n[End of pre-flight]\n\n"
 }
 
 function gather_boilerplate() {
 # Boilerplate
-  printf "\n==Started gather==\n"
+  printf "\n\n==Started gather==\n"
   date
   printf "\nOptions used: output file = $FILE, namespace string = \'$NS\'"
   printf "\nFunction flags: \'$MOD\'"
