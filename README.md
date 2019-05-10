@@ -5,9 +5,12 @@ A small collection of two bash scripts to automate the gathering of frequently c
 
 ``oc-gather.sh`` is the main control file. It executes each test function based upon simple logic. The test functions are stored in ``oc-gather-lib.sh``. 
 
+You will need to be already logged into your OpenShift cluster before running this script.
+
 ## Specification
 ### Usage
 ``oc-gather -f <output file> [-n <namespace>] [-m <test module(s) to run>]``
+
 #### Examples
 To execute all tests: ``$ ./oc-gather.sh -f output.log``. Because no namespace is specified, the ``default`` namespace will be used for some tests and some tests will be skipped.
 
@@ -17,7 +20,8 @@ To execute only the ``gather_version`` module within ``myproject`` namespace: ``
 
 To execute only the tests ``gather_version`` and ``gather_network`` within the namespace ``myproject``: ``$ oc-gather.sh -f output.log -n myproject -m "gather_version gather_network"``.
 
-To ensure that certain privileged functions succeed: ``$ sudo oc-gather.sh -f output.log -n myproject -m "gather_version gather_network"``.
+To ensure that certain privileged OS functions succeed, use ``sudo``: ``$ sudo oc-gather.sh -f output.log -n myproject -m "gather_version gather_network"``.
+
 ### General Functionality
 *oc-gather* gathers logs and ``oc`` command output for the currently logged-in OpenShift cluster. It will write to the output file specified by ``-f``. If an optional namespace is supplied, that namespace will be the focus for most of the ``oc`` commands, otherwise, the ``--all-namespaces`` option will be used in place of ``-n <namespace>``.
 
