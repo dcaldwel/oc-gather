@@ -28,7 +28,6 @@ To ensure that certain privileged OS functions succeed, use ``sudo``: ``$ sudo o
 ### General Functionality
 *oc-gather* gathers logs and ``oc`` command output for the currently logged-in OpenShift cluster. It will write to the output file specified by ``-f``. If an optional namespace is supplied, that namespace will be the focus for most of the ``oc`` commands, otherwise, the ``--all-namespaces`` option will be used in place of ``-n <namespace>``.
 
-If you wish to run one or more specific test functions, they can be specified using ``-m``. If ``-m`` does not exist, then all test function modules that are present in the ``FLAGS`` variable (found in ``oc-gather.sh``) will be executed. The test function names can be chosen from those listed in the ``FLAGS=`` directive in ``oc-gather.sh``. If you wish to specify more than one test function, surround them all in double quotes.
+If you wish to run one or more *specific* test modules, they can be specified using ``-m``. If ``-m`` is not passed on the commandline, then all test function modules that are present in the ``FLAGS`` variable (found in ``oc-gather.sh``) will be executed. The test function names for use with ``-m`` can be chosen from those listed in the ``FLAGS=`` directive in ``oc-gather.sh``. If you wish to specify more than one test function, surround them all in double quotes, separated with a space (see the examples, above).
 
-If this script is *not* executed as a privileged user then certain commands -- such as ``docker ps`` -- for example, will be fail. All ``oc`` commands will function regardless, provided the logged-in OpenShift user is has sufficient privileges.
-
+If this script is *not* executed as a privileged user then certain commands -- such as ``docker ps`` -- for example, will fail. All ``oc`` commands will function regardless, provided the logged-in OpenShift user is has sufficient privileges.
