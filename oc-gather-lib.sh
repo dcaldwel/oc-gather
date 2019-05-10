@@ -70,7 +70,7 @@ printf "\n[Pre-flight checks]\n"
 
 # If $NS is blank, set it to '--all-namespaces'
   if [[ ! $NS = *[!\ ]* ]] ; then
-    printf "\nSetting NS to \'--all-namespaces\'"
+    printf "\n\'-n\' not passed on commandline"
     NS="--all-namespaces"
     # Prepend '-n ' to given namespace for ease later
   else
@@ -307,4 +307,26 @@ function gather_endpoints() {
     printf "\n\noc describe ep $NS:\n"
     oc get ep $NS | grep -v 'NAME' | awk '{print $1}' | while read data; do oc describe ep $NS $data ; done
   fi
+}
+
+function gather_certs() {
+# Check certs
+  printf "\n\n==Certificate checks==\n"
+  printf "\nLooking for certificate end dates in /etc/origin/master/*.crt:\n\n"
+  for i in /etc/origin/master/*.crt ; do echo $i; openssl x509 -noout -text -in $i | grep "Not After" ;done
+
+  printf "\nLooking for certificate validity in *kubeconfig:\n\n"
+  for config in $(find /etc/origin/ -name "*kubeconfig"); do echo "Config: $config";  file=$(basename $config); echo "  File: $file"; awk '/cert/ {print $2}' $config | sed "s/$file//" | base64 -d | openssl x509 -text -noout | grep Validity -A2 ; done
+
+  printf "\nLooking to see if certificates have been signed by ca.crt:\n\n"
+  for i in /etc/origin/master/*.crt ; do echo $i; openssl verify -CAfile /etc/origin/master/ca.crt $i ;done
+
+  printf "\nLooking for subject and subject alternative names in the OCP certificate:\n\n"
+  openssl x509 -in /etc/origin/master/master.server.crt -text -noout | grep -i 'subject:'
+  openssl x509 -in /etc/origin/master/master.server.crt -text -noout | grep -A1 -i 'subject alternative'
+
+  printf "\nGathering md5sums of admin.kubeconfig and .kube/config:\n\n"
+  grep certificate-authority-data /etc/origin/master/admin.kubeconfig | awk '{ print $2 }' | base64 -d | md5sum
+  grep certificate-authority-data /root/.kube/config | awk '{ print $2 }' | base64 -d | md5sum
+  printf "\n==End of certificates section==\n"  
 }
