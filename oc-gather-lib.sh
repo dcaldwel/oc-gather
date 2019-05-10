@@ -139,8 +139,8 @@ function gather_etcd() {
 function gather_storage() {
 # Storage
   printf "\n\n==Storage==\n"
-  printf "\nLocal storage:\n"
-  df
+  #printf "\nLocal storage:\n"
+  #df
   printf "\noc get pv:\n"
   oc get pv -n default
 
