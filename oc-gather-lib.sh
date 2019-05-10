@@ -174,19 +174,11 @@ function gather_network() {
     printf "\nDescribing network policies for $NS: \n"
     oc describe networkpolicy $NS 
 
-    # Skip if using --all-namespaces
-
-    if [ "$NS" == "--all-namespaces" ] ; then
-      printf "\n[Skipping as namespace = --all-namespaces]\n"
-
-    else
-
-        if [ "$NS" != "-n default" ] ; then
-          printf "\nGetting network policies for -n default: \n"
-          oc get networkpolicy -n default
-          printf "\nDescribing network policies for -n default: \n"
-          oc describe networkpolicy -n default
-      fi
+    if [ "$NS" != "--all-namespaces" ] ; then
+        printf "\nGetting network policies for --all-namespaces: \n"
+        oc get networkpolicy --all-namespaces
+        printf "\nDescribing network policies for --all-namespaces: \n"
+        oc describe networkpolicy --all-namespaces
     fi
 
     printf "\n==End of networkpolicy plugin section==\n"
@@ -209,7 +201,7 @@ function gather_network() {
 function gather_deployment_errors() {
 # Deployment pods in error
   if grepMatch="$(oc get pods $NS | grep deploy | grep Error | awk '{print $1}')" ; then
-    printf "\n==Deployment pods in error. For oc describe to run over error pods, supply a namespace using -n ==\n"
+    printf "\n==Deployment pods in error.==\n"
     printf "\n\noc get pods $NS:\n"
     oc get pods $NS | grep deploy | grep Error | awk '{print "-n " $1 " " $2}' | while read data; do oc get pods $data -o yaml ; done
 
@@ -240,7 +232,7 @@ function gather_pod_errors() {
 
   # If we find the string 'Error' in the oc output, get those pods
   if grepMatch="$(oc get pods $NS | grep Error | awk '{print $1}')" ; then
-    printf "\n==Pods in error. For oc describe to run over error pods, supply a namespace using -n ==\n"
+    printf "\n==Pods in error.==\n"
     printf "\n\noc get pods $NS:\n"
     oc get pods $NS | grep Error | awk '{print "-n " $1 " " $2}' | while read data; do oc get pods $data -o yaml ; done
 
