@@ -124,7 +124,7 @@ function gather_nodes() {
   # Nodes
   printf "\n\n==Nodes==\n"
   printf "\noc get nodes\n"
-  oc get nodes
+  oc get nodes -o wide
   printf "\n==End of nodes section==\n\n"
 }
 
