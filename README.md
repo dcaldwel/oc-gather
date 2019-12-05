@@ -8,7 +8,7 @@ A small collection of two bash scripts to automate the gathering of frequently c
 **Note:**
 
 - *You will need to be already logged into your OpenShift cluster before running this script.*
-- *Certain commands, like the Docker commands, for example, will only work or be relevant when ``oc-gather`` is executed within the cluster -- preferably a master.*
+- *Certain commands, like the Docker commands, for example, will only work or be relevant when ``oc-gather`` is executed within the cluster -- preferably a master -- rather than on a bastion.*
 
 ## Specification
 ### Usage
